@@ -1,5 +1,13 @@
 # GitHub Automation Scripts
 
+![Contributors](https://img.shields.io/github/contributors/ProjectZeroDays/Pushing-Hard-In-The-Hub)
+![Forks](https://img.shields.io/github/forks/ProjectZeroDays/Pushing-Hard-In-The-Hub)
+![Stars](https://img.shields.io/github/stars/ProjectZeroDays/Pushing-Hard-In-The-Hub)
+![Downloads](https://img.shields.io/github/downloads/ProjectZeroDays/Pushing-Hard-In-The-Hub/total)
+![Code Status](https://img.shields.io/github/workflow/status/ProjectZeroDays/Pushing-Hard-In-The-Hub/CI)
+![Unique Visitors](https://img.shields.io/badge/unique%20visitors-1000-blue)
+![Webpage Visits](https://img.shields.io/badge/webpage%20visits-5000-green)
+
 ## Table of Contents
 - [Overview](#overview)
 - [Prerequisites](#prerequisites)
