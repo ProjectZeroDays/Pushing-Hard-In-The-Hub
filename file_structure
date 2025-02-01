@@ -1,0 +1,8 @@
+Pushing Hard In The Hub/
+├── scripts/
+│   ├── auto_push_to_github.py
+│   ├── auto_push_to_github.sh
+│   ├── auto_push_to_github.ps1
+│   └── auto_push_to_github.bat
+├── requirements.txt
+└── .env
