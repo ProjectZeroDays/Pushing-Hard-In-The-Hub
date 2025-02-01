@@ -27,18 +27,17 @@ These scripts automate the process of pushing changes to a GitHub repository, cr
 ## File Structure
 ```plaintext
 project/
-├── scripts/
-│   ├── push_to_github.py
-│   ├── push_to_github.sh
-│   ├── push_to_github.ps1
-│   └── push_to_github.bat
+├── auto_push_to_github.py
+├── auto_push_to_github.sh
+├── auto_push_to_github.ps1
+├── auto_push_to_github.bat
 ├── requirements.txt
 └── .env
 ```
 
 ## Setup
 1. Clone the repository.
-2. Navigate to the `project/scripts` directory.
+2. Navigate to the `project` directory.
 3. Create a `.env` file in the root directory with the following content:
 ```plaintext
 GITHUB_TOKEN=your_github_pat
@@ -51,40 +50,40 @@ pip install -r requirements.txt
 ## Usage
 
 ### Python Script
-1. Navigate to the `scripts` directory.
+1. Navigate to the `project` directory.
 2. Run the Python script:
 ```bash
-python push_to_github.py
+python auto_push_to_github.py
 ```
-3. Follow the prompts to enter the necessary information (repository owner, repository name, file path to push, commit message, etc.).
+3. Follow the prompts to enter the necessary information (repository owner, repository name, file paths to push, commit message, etc.).
 
 ### Bash Script
-1. Navigate to the `scripts` directory.
+1. Navigate to the `project` directory.
 2. Run the Bash script:
 ```bash
-bash push_to_github.sh
+bash auto_push_to_github.sh
 ```
-3. Follow the prompts to enter the necessary information (repository owner, repository name, file path to push, commit message, etc.).
+3. Follow the prompts to enter the necessary information (repository owner, repository name, file paths to push, commit message, etc.).
 
 ### PowerShell Script
-1. Navigate to the `scripts` directory.
+1. Navigate to the `project` directory.
 2. Run the PowerShell script:
 ```powershell
-.\push_to_github.ps1
+.\auto_push_to_github.ps1
 ```
-3. Follow the prompts to enter the necessary information (repository owner, repository name, file path to push, commit message, etc.).
+3. Follow the prompts to enter the necessary information (repository owner, repository name, file paths to push, commit message, etc.).
 
 ### Batch Script
-1. Navigate to the `scripts` directory.
+1. Navigate to the `project` directory.
 2. Run the Batch script:
 ```cmd
-push_to_github.bat
+auto_push_to_github.bat
 ```
-3. Follow the prompts to enter the necessary information (repository owner, repository name, file path to push, commit message, etc.).
+3. Follow the prompts to enter the necessary information (repository owner, repository name, file paths to push, commit message, etc.).
 
 ## Enhancements and Customizations
 - **Branch Name**: The default branch name is `automated-branch`. You can customize this by entering a different name when prompted.
-- **File Path**: Specify the path of the file you want to push to the repository.
+- **File Paths**: Specify the paths of the files you want to push to the repository.
 - **Commit Message**: Provide a meaningful commit message for the changes.
 - **Logging**: All scripts include logging to track the progress and errors. You can modify the logging level and format as needed.
 - **Handling Multiple Files**: Modify the scripts to handle multiple files if required.

@@ -1,4 +1,4 @@
--param (
+param (
     [string]$RepoOwner,
     [string]$RepoName,
     [string]$BranchName = "automated-branch",
@@ -8,10 +8,10 @@
 
 # Load environment variables from .env file if it exists
 if (Test-Path .env) {
-    Get-Content .env | ForEach-Object {-
+    Get-Content .env | ForEach-Object {
         if ($_ -match "^(.*?)=(.*)$") {
             [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2])
-        }--
+        }
     }
 }
 
@@ -25,39 +25,59 @@ $FileContent = Get-Content -Raw -Path $FilePath
 $EncodedContent = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($FileContent))
 
 function Create-Branch {
-    $MainSha = (Invoke-RestMethod -Headers @{Authorization = "token $GitHubToken"} -Uri "https://api.github.com/repos/$RepoOwner/$RepoName/git/refs/heads/main" -UseBasicParsing).object.sha
-    $Response = Invoke-RestMethod -Method Post -Headers @{Authorization = "token $GitHubToken"} -Uri "https://api.github.com/repos/$RepoOwner/$RepoName/git/refs" -Body (@{
-        ref = "refs/heads/$BranchName"
-        sha = $MainSha
-    } | ConvertTo-Json) -UseBasicParsing
-    return $Response
+    try {
+        $MainSha = (Invoke-RestMethod -Headers @{Authorization = "token $GitHubToken"} -Uri "https://api.github.com/repos/$RepoOwner/$RepoName/git/refs/heads/main" -UseBasicParsing).object.sha
+        $Response = Invoke-RestMethod -Method Post -Headers @{Authorization = "token $GitHubToken"} -Uri "https://api.github.com/repos/$RepoOwner/$RepoName/git/refs" -Body (@{
+            ref = "refs/heads/$BranchName"
+            sha = $MainSha
+        } | ConvertTo-Json) -UseBasicParsing
+        Write-Output "Branch created successfully."
+        return $Response
+    } catch {
+        Write-Error "Failed to create branch: $_"
+    }
 }
 
 function Create-File {
-    $Response = Invoke-RestMethod -Method Put -Headers @{Authorization = "token $GitHubToken"} -Uri "https://api.github.com/repos/$RepoOwner/$RepoName/contents/$FilePath" -Body (@{
-        message = $CommitMessage
-        content = $EncodedContent
-        branch = $BranchName
-    } | ConvertTo-Json) -UseBasicParsing
-    return $Response
+    try {
+        $Response = Invoke-RestMethod -Method Put -Headers @{Authorization = "token $GitHubToken"} -Uri "https://api.github.com/repos/$RepoOwner/$RepoName/contents/$FilePath" -Body (@{
+            message = $CommitMessage
+            content = $EncodedContent
+            branch = $BranchName
+        } | ConvertTo-Json) -UseBasicParsing
+        Write-Output "File created successfully."
+        return $Response
+    } catch {
+        Write-Error "Failed to create file: $_"
+    }
 }
 
 function Create-PullRequest {
-    $Response = Invoke-RestMethod -Method Post -Headers @{Authorization = "token $GitHubToken"} -Uri "https://api.github.com/repos/$RepoOwner/$RepoName/pulls" -Body (@{
-        title = "Automated Pull Request"
-        head = $BranchName
-        base = "main"
-        body = "This is an automated pull request."
-    } | ConvertTo-Json) -UseBasicParsing
-    return $Response.number
+    try {
+        $Response = Invoke-RestMethod -Method Post -Headers @{Authorization = "token $GitHubToken"} -Uri "https://api.github.com/repos/$RepoOwner/$RepoName/pulls" -Body (@{
+            title = "Automated Pull Request"
+            head = $BranchName
+            base = "main"
+            body = "This is an automated pull request."
+        } | ConvertTo-Json) -UseBasicParsing
+        Write-Output "Pull request created successfully."
+        return $Response.number
+    } catch {
+        Write-Error "Failed to create pull request: $_"
+    }
 }
 
 function Merge-PullRequest {
     param ([int]$PrNumber)
-    $Response = Invoke-RestMethod -Method Put -Headers @{Authorization = "token $GitHubToken"} -Uri "https://api.github.com/repos/$RepoOwner/$RepoName/pulls/$PrNumber/merge" -Body (@{
-        commit_message = "Automated merge"
-    } | ConvertTo-Json) -UseBasicParsing
-    return $Response
+    try {
+        $Response = Invoke-RestMethod -Method Put -Headers @{Authorization = "token $GitHubToken"} -Uri "https://api.github.com/repos/$RepoOwner/$RepoName/pulls/$PrNumber/merge" -Body (@{
+            commit_message = "Automated merge"
+        } | ConvertTo-Json) -UseBasicParsing
+        Write-Output "Pull request merged successfully."
+        return $Response
+    } catch {
+        Write-Error "Failed to merge pull request: $_"
+    }
 }
 
 function Save-SettingsProfile {

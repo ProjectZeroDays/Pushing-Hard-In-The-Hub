@@ -27,17 +27,17 @@ for /f "delims=" %%i in ('type %FILE_PATH%') do set FILE_CONTENT=!FILE_CONTENT!%
 set ENCODED_CONTENT=%FILE_CONTENT:~0,1000%
 
 :: Create branch
-for /f "tokens=*" %%i in ('curl -s -H "Authorization: token %GITHUB_TOKEN%" "https://api.github.com/repos/%REPO_OWNER%/%REPO_NAME%/git/refs/heads/main"') do set MAIN_SHA=%%i
-for /f "tokens=*" %%i in ('curl -s -X POST -H "Authorization: token %GITHUB_TOKEN%" -d "{\"ref\": \"refs/heads/%BRANCH_NAME%\", \"sha\": \"%MAIN_SHA%\"}" "https://api.github.com/repos/%REPO_OWNER%/%REPO_NAME%/git/refs"') do set BRANCH_RESPONSE=%%i
+for /f "tokens=*" %%i in ('curl -s -H "Authorization: token %GITHUB_TOKEN" "https://api.github.com/repos/%REPO_OWNER%/%REPO_NAME%/git/refs/heads/main"') do set MAIN_SHA=%%i
+for /f "tokens=*" %%i in ('curl -s -X POST -H "Authorization: token %GITHUB_TOKEN" -d "{\"ref\": \"refs/heads/%BRANCH_NAME%\", \"sha\": \"%MAIN_SHA%\"}" "https://api.github.com/repos/%REPO_OWNER%/%REPO_NAME%/git/refs"') do set BRANCH_RESPONSE=%%i
 
 :: Create file
-for /f "tokens=*" %%i in ('curl -s -X PUT -H "Authorization: token %GITHUB_TOKEN%" -d "{\"message\": \"%COMMIT_MESSAGE%\", \"content\": \"%ENCODED_CONTENT%\", \"branch\": \"%BRANCH_NAME%\"}" "https://api.github.com/repos/%REPO_OWNER%/%REPO_NAME%/contents/%FILE_PATH%"') do set FILE_RESPONSE=%%i
+for /f "tokens=*" %%i in ('curl -s -X PUT -H "Authorization: token %GITHUB_TOKEN" -d "{\"message\": \"%COMMIT_MESSAGE%\", \"content\": \"%ENCODED_CONTENT%\", \"branch\": \"%BRANCH_NAME%\"}" "https://api.github.com/repos/%REPO_OWNER%/%REPO_NAME%/contents/%FILE_PATH%"') do set FILE_RESPONSE=%%i
 
 :: Create pull request
-for /f "tokens=*" %%i in ('curl -s -X POST -H "Authorization: token %GITHUB_TOKEN%" -d "{\"title\": \"Automated Pull Request\", \"head\": \"%BRANCH_NAME%\", \"base\": \"main\", \"body\": \"This is an automated pull request.\"}" "https://api.github.com/repos/%REPO_OWNER%/%REPO_NAME%/pulls"') do set PR_NUMBER=%%i
+for /f "tokens=*" %%i in ('curl -s -X POST -H "Authorization: token %GITHUB_TOKEN" -d "{\"title\": \"Automated Pull Request\", \"head\": \"%BRANCH_NAME%\", \"base\": \"main\", \"body\": \"This is an automated pull request.\"}" "https://api.github.com/repos/%REPO_OWNER%/%REPO_NAME%/pulls"') do set PR_NUMBER=%%i
 
 :: Merge pull request
-for /f "tokens=*" %%i in ('curl -s -X PUT -H "Authorization: token %GITHUB_TOKEN%" -d "{\"commit_message\": \"Automated merge\"}" "https://api.github.com/repos/%REPO_OWNER%/%REPO_NAME%/pulls/%PR_NUMBER%/merge"') do set MERGE_RESPONSE=%%i
+for /f "tokens=*" %%i in ('curl -s -X PUT -H "Authorization: token %GITHUB_TOKEN" -d "{\"commit_message\": \"Automated merge\"}" "https://api.github.com/repos/%REPO_OWNER%/%REPO_NAME%/pulls/%PR_NUMBER%/merge"') do set MERGE_RESPONSE=%%i
 
 :: Save settings profile
 :save_settings_profile
