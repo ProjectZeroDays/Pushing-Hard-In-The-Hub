@@ -1,4 +1,5 @@
 Pushing Hard In The Hub/
+├── README.md
 ├── file_structure
 ├── auto_push_to_github.py
 ├── auto_push_to_github.sh
