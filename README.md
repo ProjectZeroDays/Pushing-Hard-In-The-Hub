@@ -9,6 +9,8 @@
 - [Usage](#usage)
   - [Python Script](#python-script)
   - [Bash Script](#bash-script)
+  - [PowerShell Script](#powershell-script)
+  - [Batch Script](#batch-script)
 - [Enhancements and Customizations](#enhancements-and-customizations)
 - [Contributing](#contributing)
 - [Reporting Bugs](#reporting-bugs)
@@ -16,7 +18,7 @@
 - [License](#license)
 
 ## Overview
-This repository contains two scripts, one written in Python and the other in Bash, to automate the process of pushing changes to a GitHub repository, creating a pull request, and merging it automatically.
+This repository contains scripts written in Python, Bash, PowerShell, and Batch to automate the process of pushing changes to a GitHub repository, creating a pull request, and merging it automatically.
 
 ## Prerequisites
 - GitHub Personal Access Token (PAT) with necessary permissions.
@@ -28,7 +30,9 @@ This repository contains two scripts, one written in Python and the other in Bas
 project/
 ├── scripts/
 │   ├── push_to_github.py
-│   └── push_to_github.sh
+│   ├── push_to_github.sh
+│   ├── push_to_github.ps1
+│   └── push_to_github.bat
 ├── requirements.txt
 └── .env
 ```
@@ -63,11 +67,27 @@ bash push_to_github.sh
 ```
 3. Follow the prompts to enter the necessary information (repository owner, repository name, file path to push, commit message, etc.).
 
+### PowerShell Script
+1. Navigate to the `scripts` directory.
+2. Run the PowerShell script:
+```powershell
+.\push_to_github.ps1
+```
+3. Follow the prompts to enter the necessary information (repository owner, repository name, file path to push, commit message, etc.).
+
+### Batch Script
+1. Navigate to the `scripts` directory.
+2. Run the Batch script:
+```cmd
+push_to_github.bat
+```
+3. Follow the prompts to enter the necessary information (repository owner, repository name, file path to push, commit message, etc.).
+
 ## Enhancements and Customizations
 - **Branch Name**: The default branch name is `automated-branch`. You can customize this by entering a different name when prompted.
 - **File Path**: Specify the path of the file you want to push to the repository.
 - **Commit Message**: Provide a meaningful commit message for the changes.
-- **Logging**: Both scripts include logging to track the progress and errors. You can modify the logging level and format as needed.
+- **Logging**: All scripts include logging to track the progress and errors. You can modify the logging level and format as needed.
 - **Handling Multiple Files**: Modify the scripts to handle multiple files if required.
 
 ## Contributing
