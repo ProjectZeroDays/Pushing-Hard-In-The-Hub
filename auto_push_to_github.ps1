@@ -1,4 +1,4 @@
-param (
+-param (
     [string]$RepoOwner,
     [string]$RepoName,
     [string]$BranchName = "automated-branch",
@@ -8,10 +8,10 @@ param (
 
 # Load environment variables from .env file if it exists
 if (Test-Path .env) {
-    Get-Content .env | ForEach-Object {
+    Get-Content .env | ForEach-Object {-
         if ($_ -match "^(.*?)=(.*)$") {
             [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2])
-        }
+        }--
     }
 }
 
@@ -60,15 +60,65 @@ function Merge-PullRequest {
     return $Response
 }
 
-try {
-    Create-Branch | Out-Null
-    Write-Output "Branch created successfully."
-    Create-File | Out-Null
-    Write-Output "File created successfully."
-    $PrNumber = Create-PullRequest
-    Write-Output "Pull request created: #$PrNumber"
-    Merge-PullRequest -PrNumber $PrNumber | Out-Null
-    Write-Output "Pull request merged successfully."
-} catch {
-    Write-Error $_.Exception.Message
+function Save-SettingsProfile {
+    param ($ProfileName)
+    $ProfileContent = @{
+        RepoOwner = $RepoOwner
+        RepoName = $RepoName
+        BranchName = $BranchName
+        FilePath = $FilePath
+        CommitMessage = $CommitMessage
+    }
+    $ProfileContent | ConvertTo-Json | Set-Content -Path ".\profiles\$ProfileName.json"
+    Write-Output "Settings profile saved as $ProfileName.json"
 }
+
+function Load-SettingsProfile {
+    param ($ProfileName)
+    if (Test-Path ".\profiles\$ProfileName.json") {
+        $ProfileContent = Get-Content -Path ".\profiles\$ProfileName.json" | ConvertFrom-Json
+        $global:RepoOwner = $ProfileContent.RepoOwner
+        $global:RepoName = $ProfileContent.RepoName
+        $global:BranchName = $ProfileContent.BranchName
+        $global:FilePath = $ProfileContent.FilePath
+        $global:CommitMessage = $ProfileContent.CommitMessage
+        Write-Output "Settings profile $ProfileName.json loaded."
+    } else {
+        Write-Output "Settings profile $ProfileName.json does not exist."
+    }
+}
+
+function Show-Help {
+    Write-Output "Available Commands:"
+    Write-Output "1. Create-Branch"
+    Write-Output "2. Create-File"
+    Write-Output "3. Create-PullRequest"
+    Write-Output "4. Merge-PullRequest"
+    Write-Output "5. Save-SettingsProfile"
+    Write-Output "6. Load-SettingsProfile"
+    Write-Output "7. Show-Help"
+}
+
+function Main-Menu {
+    Write-Output "Select an option:"
+    Write-Output "1. Create Branch"
+    Write-Output "2. Create File"
+    Write-Output "3. Create Pull Request"
+    Write-Output "4. Merge Pull Request"
+    Write-Output "5. Save Settings Profile"
+    Write-Output "6. Load Settings Profile"
+    Write-Output "7. Show Help"
+    $Option = Read-Host -Prompt "Enter your choice"
+    switch ($Option) {
+        1 { Create-Branch }
+        2 { Create-File }
+        3 { Create-PullRequest }
+        4 { $PrNumber = Read-Host -Prompt "Enter Pull Request Number"; Merge-PullRequest -PrNumber $PrNumber }
+        5 { $ProfileName = Read-Host -Prompt "Enter Profile Name"; Save-SettingsProfile -ProfileName $ProfileName }
+        6 { $ProfileName = Read-Host -Prompt "Enter Profile Name"; Load-SettingsProfile -ProfileName $ProfileName }
+        7 { Show-Help }
+        default { Write-Output "Invalid option. Please try again." }
+    }
+}
+
+Main-Menu
