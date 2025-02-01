@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 # Load environment variables from .env file if it exists
@@ -15,10 +14,9 @@ read -p "Enter the repository owner: " REPO_OWNER
 read -p "Enter the repository name: " REPO_NAME
 read -p "Enter the branch name (default: automated-branch): " BRANCH_NAME
 BRANCH_NAME=${BRANCH_NAME:-automated-branch}
-read -p "Enter the file path to push: " FILE_PATH
+read -p "Enter the file paths to push (comma-separated): " FILE_PATHS
+IFS=',' read -r -a FILE_PATHS_ARRAY <<< "$FILE_PATHS"
 read -p "Enter the commit message: " COMMIT_MESSAGE
-
-FILE_CONTENT=$(base64 -w 0 $FILE_PATH)
 
 create_branch() {
     MAIN_SHA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/git/refs/heads/main | jq -r .object.sha)
@@ -26,7 +24,10 @@ create_branch() {
 }
 
 create_file() {
-    curl -s -X PUT -H "Authorization: token $GITHUB_TOKEN" -d "{\"message\": \"$COMMIT_MESSAGE\", \"content\": \"$FILE_CONTENT\", \"branch\": \"$BRANCH_NAME\"}" https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/contents/$FILE_PATH
+    for FILE_PATH in "${FILE_PATHS_ARRAY[@]}"; do
+        FILE_CONTENT=$(base64 -w 0 $FILE_PATH)
+        curl -s -X PUT -H "Authorization: token $GITHUB_TOKEN" -d "{\"message\": \"$COMMIT_MESSAGE\", \"content\": \"$FILE_CONTENT\", \"branch\": \"$BRANCH_NAME\"}" https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/contents/$FILE_PATH
+    done
 }
 
 create_pull_request() {
@@ -45,7 +46,7 @@ save_settings_profile() {
     echo "REPO_OWNER=$REPO_OWNER" > profiles/$PROFILE_NAME.env
     echo "REPO_NAME=$REPO_NAME" >> profiles/$PROFILE_NAME.env
     echo "BRANCH_NAME=$BRANCH_NAME" >> profiles/$PROFILE_NAME.env
-    echo "FILE_PATH=$FILE_PATH" >> profiles/$PROFILE_NAME.env
+    echo "FILE_PATHS=$FILE_PATHS" >> profiles/$PROFILE_NAME.env
     echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> profiles/$PROFILE_NAME.env
     echo "Settings profile saved as $PROFILE_NAME.env"
 }
