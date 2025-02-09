@@ -25,6 +25,10 @@ create_branch() {
 
 create_file() {
     for FILE_PATH in "${FILE_PATHS_ARRAY[@]}"; do
+        if [ ! -f "$FILE_PATH" ]; then
+            echo "Error: File $FILE_PATH does not exist."
+            continue
+        fi
         FILE_CONTENT=$(base64 -w 0 $FILE_PATH)
         curl -s -X PUT -H "Authorization: token $GITHUB_TOKEN" -d "{\"message\": \"$COMMIT_MESSAGE\", \"content\": \"$FILE_CONTENT\", \"branch\": \"$BRANCH_NAME\"}" https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/contents/$FILE_PATH
     done

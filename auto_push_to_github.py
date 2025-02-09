@@ -82,7 +82,7 @@ def merge_pull_request(pr_number):
         url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/pulls/{pr_number}/merge"
         headers = {"Authorization": f"token {GITHUB_TOKEN}"}
         data = {"commit_message": "Automated merge"}
-        response = requests.put(url, headers=headers, json=data)
+        response = requests.put(url, headers=headers, json(data))
         response.raise_for_status()
         logging.info("Pull request merged successfully.")
         return response.json()
