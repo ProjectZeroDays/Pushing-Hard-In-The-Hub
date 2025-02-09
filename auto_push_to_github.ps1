@@ -2,7 +2,7 @@ param (
     [string]$RepoOwner,
     [string]$RepoName,
     [string]$BranchName = "automated-branch",
-    [string]$FilePath,
+    [string]$FilePaths,
     [string]$CommitMessage
 )
 
@@ -21,8 +21,17 @@ if (-not $GitHubToken) {
     $GitHubToken = Read-Host -Prompt "Enter your GitHub Personal Access Token"
 }
 
-$FileContent = Get-Content -Raw -Path $FilePath
-$EncodedContent = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($FileContent))
+$FilePathsArray = $FilePaths -split ","
+
+function Get-FileContent {
+    param ($FilePath)
+    if (-not (Test-Path $FilePath)) {
+        Write-Error "Error: File $FilePath does not exist."
+        return $null
+    }
+    $FileContent = Get-Content -Raw -Path $FilePath
+    return [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($FileContent))
+}
 
 function Create-Branch {
     try {
@@ -39,16 +48,21 @@ function Create-Branch {
 }
 
 function Create-File {
+    param ($FilePath)
+    $EncodedContent = Get-FileContent -FilePath $FilePath
+    if (-not $EncodedContent) {
+        return
+    }
     try {
         $Response = Invoke-RestMethod -Method Put -Headers @{Authorization = "token $GitHubToken"} -Uri "https://api.github.com/repos/$RepoOwner/$RepoName/contents/$FilePath" -Body (@{
             message = $CommitMessage
             content = $EncodedContent
             branch = $BranchName
         } | ConvertTo-Json) -UseBasicParsing
-        Write-Output "File created successfully."
+        Write-Output "File $FilePath created successfully."
         return $Response
     } catch {
-        Write-Error "Failed to create file: $_"
+        Write-Error "Failed to create file $FilePath: $_"
     }
 }
 
@@ -86,7 +100,7 @@ function Save-SettingsProfile {
         RepoOwner = $RepoOwner
         RepoName = $RepoName
         BranchName = $BranchName
-        FilePath = $FilePath
+        FilePaths = $FilePaths
         CommitMessage = $CommitMessage
     }
     $ProfileContent | ConvertTo-Json | Set-Content -Path ".\profiles\$ProfileName.json"
@@ -100,7 +114,7 @@ function Load-SettingsProfile {
         $global:RepoOwner = $ProfileContent.RepoOwner
         $global:RepoName = $ProfileContent.RepoName
         $global:BranchName = $ProfileContent.BranchName
-        $global:FilePath = $ProfileContent.FilePath
+        $global:FilePaths = $ProfileContent.FilePaths
         $global:CommitMessage = $ProfileContent.CommitMessage
         Write-Output "Settings profile $ProfileName.json loaded."
     } else {
@@ -131,7 +145,7 @@ function Main-Menu {
     $Option = Read-Host -Prompt "Enter your choice"
     switch ($Option) {
         1 { Create-Branch }
-        2 { Create-File }
+        2 { foreach ($FilePath in $FilePathsArray) { Create-File -FilePath $FilePath } }
         3 { Create-PullRequest }
         4 { $PrNumber = Read-Host -Prompt "Enter Pull Request Number"; Merge-PullRequest -PrNumber $PrNumber }
         5 { $ProfileName = Read-Host -Prompt "Enter Profile Name"; Save-SettingsProfile -ProfileName $ProfileName }

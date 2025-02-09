@@ -19,19 +19,27 @@ set /p BRANCH_NAME=Enter the branch name (default: automated-branch):
 if "%BRANCH_NAME%"=="" (
     set BRANCH_NAME=automated-branch
 )
-set /p FILE_PATH=Enter the file path to push: 
+set /p FILE_PATHS=Enter the file paths to push (comma-separated): 
 set /p COMMIT_MESSAGE=Enter the commit message: 
 
 setlocal enabledelayedexpansion
-for /f "delims=" %%i in ('type %FILE_PATH%') do set FILE_CONTENT=!FILE_CONTENT!%%i
-set ENCODED_CONTENT=%FILE_CONTENT:~0,1000%
+for %%F in (%FILE_PATHS%) do (
+    if not exist "%%F" (
+        echo Error: File %%F does not exist.
+        exit /b 1
+    )
+    for /f "delims=" %%i in ('type %%F') do set FILE_CONTENT=!FILE_CONTENT!%%i
+    set ENCODED_CONTENT=!FILE_CONTENT:~0,1000!
+)
 
 :: Create branch
 for /f "tokens=*" %%i in ('curl -s -H "Authorization: token %GITHUB_TOKEN" "https://api.github.com/repos/%REPO_OWNER%/%REPO_NAME%/git/refs/heads/main"') do set MAIN_SHA=%%i
 for /f "tokens=*" %%i in ('curl -s -X POST -H "Authorization: token %GITHUB_TOKEN" -d "{\"ref\": \"refs/heads/%BRANCH_NAME%\", \"sha\": \"%MAIN_SHA%\"}" "https://api.github.com/repos/%REPO_OWNER%/%REPO_NAME%/git/refs"') do set BRANCH_RESPONSE=%%i
 
 :: Create file
-for /f "tokens=*" %%i in ('curl -s -X PUT -H "Authorization: token %GITHUB_TOKEN" -d "{\"message\": \"%COMMIT_MESSAGE%\", \"content\": \"%ENCODED_CONTENT%\", \"branch\": \"%BRANCH_NAME%\"}" "https://api.github.com/repos/%REPO_OWNER%/%REPO_NAME%/contents/%FILE_PATH%"') do set FILE_RESPONSE=%%i
+for %%F in (%FILE_PATHS%) do (
+    for /f "tokens=*" %%i in ('curl -s -X PUT -H "Authorization: token %GITHUB_TOKEN" -d "{\"message\": \"%COMMIT_MESSAGE%\", \"content\": \"%ENCODED_CONTENT%\", \"branch\": \"%BRANCH_NAME%\"}" "https://api.github.com/repos/%REPO_OWNER%/%REPO_NAME%/contents/%%F"') do set FILE_RESPONSE=%%i
+)
 
 :: Create pull request
 for /f "tokens=*" %%i in ('curl -s -X POST -H "Authorization: token %GITHUB_TOKEN" -d "{\"title\": \"Automated Pull Request\", \"head\": \"%BRANCH_NAME%\", \"base\": \"main\", \"body\": \"This is an automated pull request.\"}" "https://api.github.com/repos/%REPO_OWNER%/%REPO_NAME%/pulls"') do set PR_NUMBER=%%i
@@ -45,7 +53,7 @@ set /p PROFILE_NAME=Enter Profile Name:
 echo REPO_OWNER=%REPO_OWNER%>profiles\%PROFILE_NAME%.env
 echo REPO_NAME=%REPO_NAME%>>profiles\%PROFILE_NAME%.env
 echo BRANCH_NAME=%BRANCH_NAME%>>profiles\%PROFILE_NAME%.env
-echo FILE_PATH=%FILE_PATH%>>profiles\%PROFILE_NAME%.env
+echo FILE_PATHS=%FILE_PATHS%>>profiles\%PROFILE_NAME%.env
 echo COMMIT_MESSAGE=%COMMIT_MESSAGE%>>profiles\%PROFILE_NAME%.env
 echo Settings profile saved as %PROFILE_NAME%.env
 
